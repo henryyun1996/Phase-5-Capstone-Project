@@ -1,0 +1,21 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+  }
+  
+  .App {
+    margin: 0% 5% 0% 5%;
+    text-align: center;
+  }
+
+  #text {
+    text-align: right;
+  }
+
+  #module {
+    margin-top: 20px;
+    padding-bottom: 50px;
+    padding-left: 30px;
+    padding-right: 30px;
+  }
