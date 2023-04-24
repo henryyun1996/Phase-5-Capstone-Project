@@ -9,14 +9,13 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask_bcrypt import Bcrypt
 
-# local imports
-
-
 # instantiate app, set attributes
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.json.compact = False
+
+app.secret_key = b'~`25<q\x84-\xa9t\xb5\xc4WX\xafB'
 
 # define metadata, instantiate db
 metadata = MetaData(naming_convention={
@@ -24,16 +23,13 @@ metadata = MetaData(naming_convention={
 })
 
 db = SQLAlchemy (metadata=metadata)
-
 migrate = Migrate (app, db)
-
 db.init_app(app)
 
 # instantiate REST api
 api = Api(app)
 
 # instantiate CORS
-
 CORS(app)
 
 #instantiate BCrypt
