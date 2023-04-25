@@ -243,12 +243,20 @@ class MessageByID(Resource):
 
 class Signup(Resource):
     def post(self):
-        data = request.get_json()
-        username = data.get('username')
-        password = data.get('password')
+        request_json = request.get_json()
+        username = request_json.get('username')
+        password = request_json.get('password')
+        first_name = request_json.get('first_name')
+        last_name = request_json.get('last_name')
+        email = request_json.get('email')
+        phone_number = request_json.get('phone_number')
 
         new_user = User(
-            username=username
+            username = username,
+            first_name = first_name,
+            last_name = last_name,
+            email = email,
+            phone_number = phone_number
         )
 
         new_user.password_hash = password
