@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from flask import Flask, jsonify, request, make_response, session
+from flask_migrate import Migrate
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
 
@@ -11,11 +12,16 @@ class Home(Resource):
         welcome_message = '<h1>Welcome to my Home Made API!</h1>'
         return make_response(welcome_message, 200)
 
+class Users(Resource):
+    def get(self):
+        users = [user.to_dict() for user in User.query.all()]
+        return make_response(jsonify(users), 200)
+
 class UserByID(Resource):
     def get(self, id):
         user = User.query.filter_by(id=id).first()
         if user:
-            return make_response(user.to_dict())
+            return make_response(user.to_dict(), 200)
         elif User.query.count() == 0:
             message = '<h1>Sorry, there are no registered users yet.</h1>'
             return make_response(message, 404)
@@ -28,20 +34,28 @@ class UserByID(Resource):
             return make_response({"error": "User not found"}, 404)
         new_username = request.json.get('username')
         new_password = request.json.get('_password_hash')
-        current_module_id = request.json.get('current_module_id')
-        progress_percentage = request.json.get('progress_percentage')
-
-        if progress_percentage:
-            user.progress_percentage = progress_percentage
-
-        if current_module_id:
-            user.current_module_id = current_module_id
+        new_first_name = request.json.get('first_name')
+        new_last_name = request.json.get('last_name')
+        new_email = request.json.get('email')
+        new_phone_number = request.json.get('phone_number')
 
         if new_username:
             user.username = new_username
 
         if new_password:
             user.password_hash = new_password
+        
+        if new_first_name:
+            user.first_name = new_first_name
+
+        if new_last_name:
+            user.last_name = new_last_name
+
+        if new_email:
+            user.email = new_email
+        
+        if new_phone_number:
+            user.phone_number = new_phone_number
 
         db.session.commit()
         return make_response(user.to_dict(), 200)
@@ -50,7 +64,7 @@ class UserByID(Resource):
         user = User.query.filter_by(id=id).first()
         if not user:
             return make_response({"error": "User not found"}, 404)
-        Favorite.query.filter_by(user_id=user.id).delete()
+        Friend.query.filter_by(user_id=user.id).delete()
         db.session.delete(user)
         db.session.commit()
         return make_response({}, 200)
@@ -81,13 +95,21 @@ class FriendByID(Resource):
     def get(self, id):
         friend = Friend.query.filter_by(id=id).first()
         if friend:
-            return make_response(jsonify(friend), 200)
+            return make_response(friend.to_dict(), 200)
         elif Friend.query.count() == 0:
             no_friend_message = '<h1>You have no friends yet!</h1>'
             return make_response(no_friend_message, 200)
         else:
             return make_response({"error": "No friend found"}, 404)
     
+    def delete(self, id):
+        friend = Friend.query.filter_by(id=id).first()
+        if not friend:
+            return make_response({"error": "Friend not found"}, 404)
+        db.session.delete(friend)
+        db.session.commit()
+        return make_response({"message":"Friend successfully deleted"}, 201)
+            
 class Rooms(Resource):
     def get(self):
         rooms = [room.to_dict() for room in Event_Planning_Room.query.all()]
@@ -95,6 +117,9 @@ class Rooms(Resource):
     
     def post(self):
         request_json = request.get_json()
+        room_name = request_json.get('room_name')
+        date_of_event = request_json.get('date_of_event')
+        time_of_event = request_json.get('time_of_event')
         room_creator_id = request_json.get('created_by')
 
         user = User.query.filter_by(id=room_creator_id).first()
@@ -102,26 +127,55 @@ class Rooms(Resource):
         if not user:
             return make_response({"error": "User not found"}, 404)
 
-        room_creator = Event_Planning_Room(created_by=room_creator_id)
-        db.session.add(room_creator)
+        date_time = Event_Planning_Room.parse_date(date_of_event, time_of_event)
+
+        new_room = Event_Planning_Room(
+            room_name = room_name,
+            date_of_event=date_time,
+            created_by = room_creator_id
+            )
+        db.session.add(new_room)
         db.session.commit()
+
+        return make_response(new_room.to_dict(), 200)
 
 class RoomByID(Resource):
     def get(self, id):
         room = Event_Planning_Room.query.filter_by(id=id).first()
         if room:
-            return make_response(jsonify(room), 200)
+            return make_response(room.to_dict(), 200)
         elif Event_Planning_Room.query.count() == 0:
             no_room_message = '<h1>There are no active rooms yet!</h1>'
             return make_response(no_room_message, 200)
         else:
             return make_response({"error": "No room found"}, 404)
 
+    def patch(self, id):
+        room = Event_Planning_Room.query.filter_by(id=id).first()
+        if not room:
+            return make_response({"error": "No room found"}, 404)
+
+        new_room_name = request.json.get('room_name')
+        new_date_of_event = request.json.get('date_of_event')
+        new_time_of_event = request.json.get('time_of_event')
+        new_date_time = Event_Planning_Room.parse_date(new_date_of_event, new_time_of_event)
+
+        if new_room_name:
+            room.room_name = new_room_name
+
+        if new_date_time:
+            room.date_of_event = new_date_time
+
+        db.session.commit()
+        return make_response(room.to_dict(), 200)
+
     def delete(self, id):
         room = Event_Planning_Room.query.filter_by(id=id).first()
         if not room:
             return make_response({"error": "No room found"}, 404)
-        # I think I have to delete this from somewhere else too (?)
+        Participant.query.filter_by(room_id=room.id).delete()
+        Event_Element.query.filter_by(room_id=room.id).delete()
+        Message.query.filter_by(room_id=room.id).delete()
         db.session.delete(room)
         db.session.commit()
         return make_response({}, 201)
@@ -149,7 +203,6 @@ class Participants(Resource):
 
         return make_response(participant.to_dict(), 200)
 
-
 class ParticipantByID(Resource):
     def get(self, id):
         participant = Participant.query.filter_by(id=id).first()
@@ -161,21 +214,18 @@ class ParticipantByID(Resource):
         else:
             return make_response({"error": "No participant found"}, 402)
 
+    def delete(self, id):
+        participant = Participant.query.filter_by(id=id).first()
+        if not participant:
+            return make_response({"error": "Participant not found"}, 404)
+        db.session.delete(participant)
+        db.session.commit()
+        return make_response({"message":"Participant successfully deleted"}, 201)
+
 class EventElements(Resource):
     def get(self):
         event_elements = [ee.to_dict() for ee in Event_Element.query.all()]
         return make_response(jsonify(event_elements), 200)
-
-class EventElementByID(Resource):
-    def get(self, id):
-        event_element = Event_Element.query.filter_by(id=id).first()
-        if event_element:
-            return make_response(jsonify(event_element), 200)
-        elif Event_Element.query.count() == 0:
-            no_event_elements_message = '<h1>There are no event elements yet!</h1>'
-            return make_response(no_event_elements_message, 200)
-        else:
-            return make_response({"error": "No event element found"}, 402)
     
     def post(self):
         request_json = request.get_json()
@@ -197,6 +247,17 @@ class EventElementByID(Resource):
         db.session.commit()
 
         return make_response(element.to_dict(), 200)
+
+class EventElementByID(Resource):
+    def get(self, id):
+        event_element = Event_Element.query.filter_by(id=id).first()
+        if event_element:
+            return make_response(event_element.to_dict(), 200)
+        elif Event_Element.query.count() == 0:
+            no_event_elements_message = '<h1>There are no event elements yet!</h1>'
+            return make_response(no_event_elements_message, 200)
+        else:
+            return make_response({"error": "No event element found"}, 402)
     
     def delete(self, id):
         event_element = Event_Element.query.filter_by(id=id).first()
@@ -205,7 +266,7 @@ class EventElementByID(Resource):
         db.session.delete(event_element)
         db.session.commit()
 
-        return make_response({}, 201)
+        return make_response({"message":"element successfully deleted"}, 201)
 
 class Messages(Resource):
     def get(self):
@@ -215,6 +276,7 @@ class Messages(Resource):
     def post(self):
         request_json = request.get_json()
 
+        message_text = request_json.get('message_text')
         user_id = request_json.get('user_id')
         room_id = request_json.get('room_id')
 
@@ -224,7 +286,7 @@ class Messages(Resource):
         if not user or not room:
             return make_response({"error": "User or Event Planning Room not found"}, 404)
 
-        message = Message(user_id=user_id, room_id=room_id)
+        message = Message(message_text=message_text, user_id=user_id, room_id=room_id)
         db.session.add(message)
         db.session.commit()
 
@@ -234,12 +296,20 @@ class MessageByID(Resource):
     def get(self, id):
         message = Message.query.filter_by(id=id).first()
         if message:
-            return make_response(jsonify(message), 200)
+            return make_response(message.to_dict(), 200)
         elif Message.query.count() == 0:
             no_messages_message = '<h1>There are no messages yet!</h1>'
             return make_response(no_messages_message, 200)
         else:
             return make_response({"error": "No message found"}, 402) 
+    
+    def delete(self, id):
+        message = Message.query.filter_by(id=id).first()
+        if not message:
+            return make_response({"error": "Message not found"}, 404)
+        db.session.delete(message)
+        db.session.commit()
+        return make_response({"message":"Message successfully deleted"}, 201)
 
 class Signup(Resource):
     def post(self):
@@ -283,15 +353,14 @@ class CheckSession(Resource):
 
 class Login(Resource):
     def post(self):
-        data = request.get_json()
+        request_json = request.get_json()
 
-        check_user = User.query.filter(User.username == data['username']).first()
+        check_user = User.query.filter(User.username == request_json['username']).first()
         
-        if check_user and check_user.authenticate(data['password']):
+        if check_user and check_user.authenticate(request_json['password']):
             session['user_id'] = check_user.id
             return make_response(check_user.to_dict(), 200)
         return {'error': 'Unauthorized'}, 401
-
 
 class Logout(Resource):
     def delete(self):
@@ -302,8 +371,10 @@ class Logout(Resource):
         return {'error': '401 Unauthorized'}, 401
 
 
+
 api.add_resource(Home, '/')
-api.add_resource(UserByID, '/user/<int:id>')
+api.add_resource(Users, '/users')
+api.add_resource(UserByID, '/users/<int:id>')
 api.add_resource(Friends, '/friends')
 api.add_resource(FriendByID, '/friends/<int:id>')
 api.add_resource(Rooms, '/rooms')
@@ -321,3 +392,6 @@ api.add_resource(Logout, '/logout')
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
+
+
+# need to prevent cloning for participants, friends

@@ -5,6 +5,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from config import db, bcrypt
+from datetime import datetime
 
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
@@ -13,7 +14,7 @@ class User(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String)
-    password = db.Column(db.String)
+    _password_hash = db.Column(db.String, nullable=False)
     first_name = db.Column(db.String)
     last_name = db.Column(db.String)
     email = db.Column(db.String)
@@ -27,6 +28,19 @@ class User(db.Model, SerializerMixin):
     participants = db.relationship('Participant', backref='user')
     messages = db.relationship('Message', backref='user')
 
+    @hybrid_property
+    def password_hash(self):
+        return self._password_hash
+
+    @password_hash.setter
+    def password_hash(self, password):
+        password_hash = bcrypt.generate_password_hash(
+            password.encode('utf-8'))
+        self._password_hash = password_hash.decode('utf-8')
+
+    def authenticate(self, password):
+        return bcrypt.check_password_hash(
+            self._password_hash, password.encode('utf-8'))
 
     def __repr__(self):
         return f"<User id={self.id}, username='{self.username}', email='{self.email}'>"
@@ -34,7 +48,7 @@ class User(db.Model, SerializerMixin):
 class Friend(db.Model, SerializerMixin):
     __tablename__ = 'friends'
 
-    serialize_rules = ('-created_at', '-updated_at',)
+    serialize_rules = ('-created_at', '-updated_at', '-_password_hash',)
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -66,6 +80,7 @@ class Event_Planning_Room(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     room_name = db.Column(db.String)
+    date_of_event = db.Column(db.DateTime)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
@@ -76,6 +91,11 @@ class Event_Planning_Room(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f"<Event_Planning_Room id={self.id}, room_name='{self.room_name}', created_by='{self.created_by}'>"
+    
+    @staticmethod
+    def parse_date(date_str, time_str):
+        date_format = '%Y-%m-%d %H:%M:%S'
+        return datetime.strptime(f"{date_str} {time_str}", date_format)
 
 class Event_Element(db.Model, SerializerMixin):
     __tablename__ = 'event_elements'
