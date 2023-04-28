@@ -1,10 +1,10 @@
-import React from 'react'
-import { Segment, Grid, Form, Button } from 'semantic-ui-react'
-import { useFormik } from "formik";
-import * as yup from "yup";
-import { useHistory } from "react-router-dom";
-import { useRecoilState } from "recoil";
-import { currentlyLoggedInState } from "../atoms/index";
+import React from 'react';
+import { Segment, Grid, Form, Button, Icon } from 'semantic-ui-react';
+import { useFormik } from 'formik';
+import * as yup from 'yup';
+import { useHistory } from 'react-router-dom';
+import { useRecoilState } from 'recoil';
+import { currentlyLoggedInState, showPasswordState } from '../atoms/index';
 
 const Login = () => {
   const [loggedInUser, setLoggedInUser] = useRecoilState(currentlyLoggedInState);
@@ -18,44 +18,49 @@ const Login = () => {
   const formik = useFormik({
     initialValues: {
       username: '',
-      password: ''
+      password: '',
     },
     validationSchema: formSchema,
     onSubmit: (values) => {
       fetch('/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(values)
+        body: JSON.stringify(values),
       })
-        .then(res => {
+        .then((res) => {
           if (res.ok) {
-            res.json().then(user => {
-              console.log(user)
+            res.json().then((user) => {
+              console.log(user);
               setLoggedInUser(user);
               history.push('/home');
             });
           } else {
-            alert('Username and Password don\'t match! Please try again.');
+            alert("Username and Password don't match! Please try again.");
           }
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Error during fetch:', error);
         });
-    }
+    },
   });
 
+  const [showPassword, setShowPassword] = useRecoilState(showPasswordState);
+
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   return (
     <div className="form">
       <Segment secondary>
-        <Grid >
-          <Grid.Column verticalAlign='middle' >
+        <Grid>
+          <Grid.Column verticalAlign="middle">
             <Form onSubmit={formik.handleSubmit}>
               <h1 id="login">Welcome to Noes Goes</h1>
               <br />
-              <Form.Field >
+              <Form.Field>
                 <label>Username:</label>
                 <Form.Input
                   name="username"
@@ -64,32 +69,42 @@ const Login = () => {
                   value={formik.values.username}
                   onChange={formik.handleChange}
                 />
-                <p style={{ color: "#FF0000" }}> {formik.errors.username}</p>
+                <p style={{ color: '#FF0000' }}> {formik.errors.username}</p>
               </Form.Field>
               <br />
               <Form.Field>
                 <label>Password:</label>
                 <Form.Input
                   name="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="Password"
                   value={formik.values.password}
                   onChange={formik.handleChange}
+                  icon={
+                    <Icon
+                      name={showPassword ? 'eye slash' : 'eye'}
+                      link
+                      onClick={handleTogglePasswordVisibility}
+                    />
+                  }
                 />
-                <p style={{ color: "#FF0000" }}> {formik.errors.password}</p>
+                <p style={{ color: '#FF0000' }}> {formik.errors.password}</p>
               </Form.Field>
               <br />
-              <Button
-                className='ui button'
-                type='submit'>Log In</Button>
+              <Button className="ui button" type="submit">
+                Log In
+              </Button>
               <br />
             </Form>
           </Grid.Column>
         </Grid>
       </Segment>
-      <h4 style={{ textAlign: 'center' }}>No account? Sign up <a href="/signup">here.</a></h4>
+      <h4 style={{ textAlign: 'center' }}>
+        No account? Sign up <a href="/signup">here.</a>
+      </h4>
     </div>
-  )
-}
+  );
+};
 
 export default Login;
+

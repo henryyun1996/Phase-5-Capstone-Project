@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { BrowserRouter, Switch, Route, useHistory } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 import { currentlyLoggedInState } from '../atoms/index';
-import LogIn from './LogIn';
+import LogIn from "./LogIn";
 import SignUp from "./SignUp";
 import Home from "./Home";
 import EventRoom from "./EventRoom";
