@@ -10,7 +10,7 @@ from datetime import datetime
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
-    serialize_rules = ('-created_at', '-updated_at', '-password', '-last_name', '-email', '-phone_number', '-users_friends', '-friends_with_users', '-event_rooms', '-participants', '-messages',)
+    serialize_rules = ('-created_at', '-updated_at', '-password', '-email', '-phone_number', '-friends_with_users', '-event_rooms', '-participants', '-messages',)
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String)
@@ -81,6 +81,7 @@ class Event_Planning_Room(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     room_name = db.Column(db.String)
     date_of_event = db.Column(db.DateTime)
+    # time_of_event = db.Column(db.Time)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())

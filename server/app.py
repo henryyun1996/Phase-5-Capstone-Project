@@ -65,6 +65,7 @@ class UserByID(Resource):
         if not user:
             return make_response({"error": "User not found"}, 404)
         Friend.query.filter_by(user_id=user.id).delete()
+        Event_Planning_Room.query.filter_by(created_by=user.id).delete()
         db.session.delete(user)
         db.session.commit()
         return make_response({}, 200)
@@ -340,6 +341,7 @@ class Signup(Resource):
         except Exception as e:
             print(e)
             return make_response({'error': 'Unprocessable Entity'}, 417)
+
 
 class CheckSession(Resource):
     def get(self):
