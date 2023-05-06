@@ -4,7 +4,6 @@ import { eventFormState } from '../atoms/index';
 
 function HomeEventCardUpdate ({ onSubmit }) {
     const [formData, setFormData] = useRecoilState(eventFormState);
-    console.log(formData)
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -18,6 +17,8 @@ function HomeEventCardUpdate ({ onSubmit }) {
         [name]: value,
         }));
     };
+
+    console.log(formData)
 
     return (
         <form onSubmit={handleSubmit}>

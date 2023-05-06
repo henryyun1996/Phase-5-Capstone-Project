@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { BrowserRouter, Switch, Route, useHistory } from 'react-router-dom';
+import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 import { currentlyLoggedInState } from '../atoms/index';
 import LogIn from "./LogIn";
@@ -7,15 +7,13 @@ import SignUp from "./SignUp";
 import Home from "./Home";
 import EventRoom from "./EventRoom";
 import Friends from "./Friends";
-import Calendar from "./Calendar";
 import HomeEventContainer from "./HomeEventContainer";
+import Header from "./Header";
+import EventElement from "./EventElement"
+import Profile from "./Profile"
 
 function App() {
     const [ currentlyLoggedIn, setCurrentlyLoggedIn ] = useRecoilState(currentlyLoggedInState);
-
-    const history = useHistory()
-    // let location = useLocation();
-    // let path = location.pathname
 
     useEffect(() => {
         fetch("/check_session")
@@ -24,12 +22,13 @@ function App() {
               r.json().then((user) => setCurrentlyLoggedIn(user));
             }
           });
-      }, []);
+      }, [setCurrentlyLoggedIn]);
 
 
     return (
         <div className="App ui">
             <BrowserRouter>
+                <Header />
                 <Switch>
                     <Route exact path="/">
                         <LogIn />
@@ -38,25 +37,31 @@ function App() {
                         <SignUp />
                     </Route>
                     <Route exact path='/home'>
-                        <Home 
-                            first_name={currentlyLoggedIn?.first_name} 
-                            last_name={currentlyLoggedIn?.last_name}
-                        />
-                        <HomeEventContainer />
+                        <div>
+                            <Home 
+                                first_name={currentlyLoggedIn?.first_name} 
+                                last_name={currentlyLoggedIn?.last_name}
+                            />
+                            <HomeEventContainer />
+                        </div>
                     </Route>
                     <Route exact path="/event-room">
                         <EventRoom 
-
+                            currentlyLoggedInID={currentlyLoggedIn?.id}
                         />
                     </Route>
-                    <Route exact path="/calendar">
-                        <Calendar 
-                        
-                        />
-                    </Route>
+                    <Route path="/rooms/:roomId" render={(props) => 
+                        <EventElement roomId={props.match.params.roomId} />} 
+                    />
                     <Route exact path="/friends">
                         <Friends
-                        
+                            first_name={currentlyLoggedIn?.first_name}
+                        />
+                    </Route>
+                    <Route exact path="/edit-profile">
+                        <Profile 
+                            currentlyLoggedIn={currentlyLoggedIn} 
+                            setCurrentlyLoggedIn={setCurrentlyLoggedIn}
                         />
                     </Route>
                 </Switch>
