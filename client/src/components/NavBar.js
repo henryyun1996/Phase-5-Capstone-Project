@@ -4,7 +4,7 @@ import { useRecoilState } from 'recoil';
 import { currentlyLoggedInState } from '../atoms/index';
 
 function NavBar() {
-    const [ currentlyLoggedIn, setCurrentlyLoggedIn ] = useRecoilState(currentlyLoggedInState);
+    const [ , setCurrentlyLoggedIn ] = useRecoilState(currentlyLoggedInState);
 
     const history = useHistory()
 
@@ -23,9 +23,11 @@ function NavBar() {
             <div className="ui menu">
                 <a className="item" href="/home">Home</a>
                 <a className="item" href="/event-room">Create an Event</a>
-                <a className="item" href="/calendar">Your Calendar</a>
                 <a className="item" href="/friends">Friends</a>
-                <a className="item right floated" href='/' onClick={handleLogout}> Log Out </a>
+                <div className="ui menu right">
+                  <a className="item right floated" href="/edit-profile">⛄︎</a>
+                  <a className="item right floated" href='/' onClick={handleLogout}> Log Out </a>
+                </div>
             </div>
         </div>
     )

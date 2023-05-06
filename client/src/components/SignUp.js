@@ -1,5 +1,5 @@
 import React from 'react';
-import { Segment, Grid, Form, Button } from 'semantic-ui-react';
+import { Form, Button } from 'semantic-ui-react';
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useHistory } from "react-router-dom";
@@ -7,7 +7,7 @@ import { useRecoilState } from "recoil";
 import { currentlyLoggedInState } from "../atoms/index";
 
 const Signup = () => {
-    const [loggedInUser, setLoggedInUser] = useRecoilState(currentlyLoggedInState);
+    const [, setLoggedInUser] = useRecoilState(currentlyLoggedInState);
     const history = useHistory();
 
     const formSchema = yup.object().shape({
@@ -26,9 +26,6 @@ const Signup = () => {
             .required('Please provide your first name here'),
         last_name: yup.string()
             .required("Please provide your last name here"),
-        email: yup.string()
-            .email('Invalid email')
-            .required("Please provide your email here"),
         phone_number: yup.string()
             .matches(/^\+?[1-9]\d{2}-\d{3}-\d{4}$/, 'Please enter a valid phone number in the format xxx-xxx-xxxx')
             .required("Please provide your phone number here"),
@@ -43,7 +40,6 @@ const Signup = () => {
             first_name: '',
             last_name: '',
             phone_number: '',
-            email: ''
         },
         validationSchema: formSchema,
         onSubmit: (values) => {
@@ -59,7 +55,7 @@ const Signup = () => {
                     if (res.ok) {
                         res.json().then( new_user => setLoggedInUser(new_user))
                         console.log("User successfully created!")
-                        history.push('/home')
+                        history.push('/')
                     } else {
                         res.json().then( err => {
                             console.log(err)
@@ -74,9 +70,11 @@ const Signup = () => {
     })
 
   return (
-    <div>
+    <div style={{ width: "60%", margin: "0 auto" }}>
         <h1 id="signup">Sign Up</h1>
         <Form onSubmit={formik.handleSubmit} style={{ margin: "30px" }}>
+            <div className="ui inverted segment" style={{ backgroundColor: '#7D886E' }}>
+                <div className="one field">
             <Form.Field>
                 <label>Username</label>
                 <input 
@@ -136,17 +134,6 @@ const Signup = () => {
                 <p style={{ color: "#FF0000" }}>{ formik.errors.last_name }</p>
             </Form.Field>
             <Form.Field>
-                <label>Email</label>
-                <input
-                    type="text"
-                    name="email"
-                    placeholder="Email"
-                    value={formik.values.email}
-                    onChange={formik.handleChange}
-                />
-                <p style={{ color: "#FF0000" }}>{ formik.errors.email }</p>
-            </Form.Field>
-            <Form.Field>
                 <label>Phone Number</label>
                 <input
                     type="text"
@@ -160,6 +147,8 @@ const Signup = () => {
             <Button
               className='ui button' 
               type='submit'>Sign Up</Button>
+                </div>
+            </div>
         </Form>
     </div>
   )

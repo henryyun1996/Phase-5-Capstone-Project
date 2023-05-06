@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from config import *
 from models import User, Friend, Participant, Event_Planning_Room, Event_Element, Message
+from datetime import datetime
 
 class Home(Resource):
     def get(self):
@@ -36,7 +37,6 @@ class UserByID(Resource):
         new_password = request.json.get('_password_hash')
         new_first_name = request.json.get('first_name')
         new_last_name = request.json.get('last_name')
-        new_email = request.json.get('email')
         new_phone_number = request.json.get('phone_number')
 
         if new_username:
@@ -50,9 +50,6 @@ class UserByID(Resource):
 
         if new_last_name:
             user.last_name = new_last_name
-
-        if new_email:
-            user.email = new_email
         
         if new_phone_number:
             user.phone_number = new_phone_number
@@ -66,14 +63,23 @@ class UserByID(Resource):
             return make_response({"error": "User not found"}, 404)
         Friend.query.filter_by(user_id=user.id).delete()
         Event_Planning_Room.query.filter_by(created_by=user.id).delete()
+        Participant.query.filter_by(user_id=user.id).delete()
+        Message.query.filter_by(user_id=user.id).delete()
         db.session.delete(user)
         db.session.commit()
         return make_response({}, 200)
 
 class Friends(Resource):
     def get(self):
-        friends = [friend.to_dict() for friend in Friend.query.all()]
-        return make_response(jsonify(friends), 200)
+        # Check if the user is authenticated
+        if 'user_id' not in session:
+            return make_response(jsonify({'message': 'User not authenticated'}), 401)
+        user_id = session['user_id']
+
+        friends = Friend.query.filter_by(user_id=user_id).all()
+
+        friends_serialized = [friend.to_dict() for friend in friends]
+        return make_response(jsonify(friends_serialized), 200)
 
     def post(self):
         request_json = request.get_json()
@@ -119,8 +125,8 @@ class Rooms(Resource):
     def post(self):
         request_json = request.get_json()
         room_name = request_json.get('room_name')
-        date_of_event = request_json.get('date_of_event')
-        time_of_event = request_json.get('time_of_event')
+        date_of_event_str = request_json.get('date_of_event')
+        time_of_event_str = request_json.get('time_of_event')
         room_creator_id = request_json.get('created_by')
 
         user = User.query.filter_by(id=room_creator_id).first()
@@ -128,11 +134,13 @@ class Rooms(Resource):
         if not user:
             return make_response({"error": "User not found"}, 404)
 
-        date_time = Event_Planning_Room.parse_date(date_of_event, time_of_event)
+        date_of_event = datetime.strptime(date_of_event_str, '%Y-%m-%d')
+        time_of_event = datetime.strptime(time_of_event_str, '%H:%M').time()
 
         new_room = Event_Planning_Room(
             room_name = room_name,
-            date_of_event=date_time,
+            date_of_event=date_of_event,
+            time_of_event=time_of_event,
             created_by = room_creator_id
             )
         db.session.add(new_room)
@@ -152,20 +160,34 @@ class RoomByID(Resource):
             return make_response({"error": "No room found"}, 404)
 
     def patch(self, id):
+        request_json = request.get_json()
         room = Event_Planning_Room.query.filter_by(id=id).first()
         if not room:
             return make_response({"error": "No room found"}, 404)
 
         new_room_name = request.json.get('room_name')
-        new_date_of_event = request.json.get('date_of_event')
-        new_time_of_event = request.json.get('time_of_event')
-        new_date_time = Event_Planning_Room.parse_date(new_date_of_event, new_time_of_event)
+        new_date_of_event_str = request_json.get('date_of_event')
+        new_time_of_event_str = request_json.get('time_of_event')
+
+        new_date_of_event = datetime.strptime(new_date_of_event_str, '%Y-%m-%d')
+        new_time_of_event = datetime.strptime(new_time_of_event_str, '%H:%M').time()
 
         if new_room_name:
             room.room_name = new_room_name
 
-        if new_date_time:
-            room.date_of_event = new_date_time
+        if new_date_of_event_str:
+            try:
+                new_date_of_event = datetime.strptime(new_date_of_event_str, '%Y-%m-%d')
+            except ValueError:
+                return make_response({"error": "Invalid date format"}, 400)
+            room.date_of_event = new_date_of_event
+        
+        if new_time_of_event_str:
+            try:
+                new_time_of_event = datetime.strptime(new_time_of_event_str, '%H:%M').time()
+            except ValueError:
+                return make_response({"error": "Invalid time format"}, 400)
+            room.time_of_event = new_time_of_event
 
         db.session.commit()
         return make_response(room.to_dict(), 200)
@@ -319,14 +341,12 @@ class Signup(Resource):
         password = request_json.get('password')
         first_name = request_json.get('first_name')
         last_name = request_json.get('last_name')
-        email = request_json.get('email')
         phone_number = request_json.get('phone_number')
 
         new_user = User(
             username = username,
             first_name = first_name,
             last_name = last_name,
-            email = email,
             phone_number = phone_number
         )
 
@@ -394,6 +414,3 @@ api.add_resource(Logout, '/logout')
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
-
-
-# need to prevent cloning for participants, friends

@@ -10,14 +10,13 @@ from datetime import datetime
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
-    serialize_rules = ('-created_at', '-updated_at', '-password', '-email', '-phone_number', '-friends_with_users', '-event_rooms', '-participants', '-messages',)
+    serialize_rules = ('-created_at', '-updated_at', '-_password_hash', '-email', '-phone_number', '-users_friends', '-friends_with_users', '-event_rooms', '-participants', '-messages',)
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String)
     _password_hash = db.Column(db.String, nullable=False)
     first_name = db.Column(db.String)
     last_name = db.Column(db.String)
-    email = db.Column(db.String)
     phone_number = db.Column(db.String)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
@@ -81,7 +80,7 @@ class Event_Planning_Room(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     room_name = db.Column(db.String)
     date_of_event = db.Column(db.DateTime)
-    # time_of_event = db.Column(db.Time)
+    time_of_event = db.Column(db.Time)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
@@ -94,9 +93,17 @@ class Event_Planning_Room(db.Model, SerializerMixin):
         return f"<Event_Planning_Room id={self.id}, room_name='{self.room_name}', created_by='{self.created_by}'>"
     
     @staticmethod
-    def parse_date(date_str, time_str):
+    def parse_date(date_str, time_str=''):
+        if not date_str:
+            return None
+
         date_format = '%Y-%m-%d %H:%M:%S'
-        return datetime.strptime(f"{date_str} {time_str}", date_format)
+
+        if time_str:
+            return datetime.strptime(f"{date_str} {time_str}", date_format)
+        else:
+            return datetime.strptime(date_str, '%Y-%m-%d')
+
 
 class Event_Element(db.Model, SerializerMixin):
     __tablename__ = 'event_elements'

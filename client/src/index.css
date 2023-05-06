@@ -2,6 +2,7 @@ body {
     margin: 0;
     padding: 0;
     font-family: sans-serif;
+    background-color: #EADDCA
   }
   
   .App {
@@ -13,9 +14,6 @@ body {
     text-align: right;
   }
 
-  #module {
-    margin-top: 20px;
-    padding-bottom: 50px;
-    padding-left: 30px;
-    padding-right: 30px;
+  .ui menu right {
+    flex: right;
   }
