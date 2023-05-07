@@ -3,6 +3,7 @@ import { useRecoilState } from 'recoil';
 import { eventElementState,roomState, eventValueState, eventElementsState, isLoadingState, isFriendsState, isParticipantState } from '../atoms/index';
 import NavBar from './NavBar';
 import EventElementCard from './EventElementCard';
+import ChatBox from './ChatBox';
 
 function EventElement({ roomId }) {
   const [eventElement, setEventElement] = useRecoilState(eventElementState);
@@ -190,6 +191,7 @@ return (
             <button type="submit">Add Participant</button>
         </div>
       </form>
+      <ChatBox roomId={roomId}/>
     </div>
   );
 }
