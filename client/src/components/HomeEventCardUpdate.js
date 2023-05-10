@@ -43,6 +43,7 @@ function HomeEventCardUpdate ({ onSubmit }) {
             onChange={handleChange}
             placeholder="Time of Event"
         />
+        <br />
         <button type="submit">Save</button>
         </form>
     );

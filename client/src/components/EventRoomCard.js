@@ -7,7 +7,7 @@ function HomeEventCard({ room }) {
 
     return (
         <>
-            <div className="ui card">
+            <div className="ui centered card" style={{ backgroundColor: '#709FC1', padding: '0 0 10px', border: '2px solid #6A7DE1' }}>
                 <div className="content">
                     <h3>{room.room_name}</h3>
                     <p>{formattedDate}</p>

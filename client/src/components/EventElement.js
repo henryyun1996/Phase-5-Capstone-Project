@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
+import { Form, Button, Grid } from 'semantic-ui-react';
 import { eventElementState,roomState, eventValueState, eventElementsState, isLoadingState, isFriendsState, isParticipantState } from '../atoms/index';
 import NavBar from './NavBar';
 import EventElementCard from './EventElementCard';
-import ChatBox from './ChatBox';
 
 function EventElement({ roomId }) {
   const [eventElement, setEventElement] = useRecoilState(eventElementState);
@@ -82,7 +82,8 @@ function EventElement({ roomId }) {
           room_id: roomId,
           event_element: eventElement,
           event_value: eventValue,
-        }),
+          completed: false,
+        }),        
       });
   
       if (!response.ok) {
@@ -113,6 +114,7 @@ const handleParticipantSubmit = async (e) => {
     const friendId = await getFriendIdByUsername(selectedUsername);
     if (!friendId) {
       console.log(`Could not find friend with username ${selectedUsername}`);
+      alert("You are either not friends with this person or there might be mispelling! Please try again.")
       return;
     }
     try {
@@ -127,6 +129,7 @@ const handleParticipantSubmit = async (e) => {
         }),
       });
       console.log(response)
+      alert(`${selectedUsername} successfully added as participant!`)
       setIsParticipant('');
     } catch (error) {
       console.log(error);
@@ -140,58 +143,75 @@ const handleParticipantSubmit = async (e) => {
 
 return (
     <div>
-      <div>
-        <h1>Event: "{roomName}" Planning Room</h1>
+      <div style={{ padding: '50px' }}>
+        <h1 style={{ color: '#FAC898' }}>Event: "{roomName}" Planning Room</h1>
+        <br />
         <NavBar />
+        <br />
       </div>
-      <form onSubmit={handleElementSubmit}>
-        <div>
-          <label htmlFor="event-element">Event Element:</label>
-          <input
-            id="event-element"
-            type="text"
-            value={eventElement}
-            onChange={(e) => setEventElement(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="event-value">Event Value:</label>
-          <input
-            id="event-value"
-            type="text"
-            value={eventValue}
-            onChange={(e) => setEventValue(e.target.value)}
-          />
-        </div>
-        <button type="submit">Add</button>
-      </form>
-      {filteredElements.length === 0 ? (
-        <div>
-          <h1>No elements yet!</h1>
-        </div>
-      ) : (
-        <div className="card-container">
-          {eventElements
-            .filter((element) => parseInt(roomId) === element.event_planning_room.id)
-            .map((element) => (
-                <EventElementCard key={element.id} element={element} />
-            ))}
-        </div>
-      )}
-      <form onSubmit={handleParticipantSubmit}>
-        <div>
-            <label htmlFor="participant">Add Participant:</label>
-            <input
-              id="participant"
-              type="text"
-              value={isParticipant}
-              placeholder="Add Participant"
-              onChange={(e) => setIsParticipant(e.target.value)}
-            />
-            <button type="submit">Add Participant</button>
-        </div>
-      </form>
-      <ChatBox roomId={roomId}/>
+      <div style={{ maxWidth: '80%', margin: '0 auto' }}>
+        <Grid columns={2} divided style={{ display: 'flex', alignItems: 'center', backgroundColor: '#9CA6C9', border: '6px solid #9CA6D9', padding: '35px' }}>
+          <Grid.Column width={8}>
+            <Form onSubmit={handleElementSubmit}>
+              <div className="ui inverted segment" style={{ backgroundColor: '#47759E', width:'80%', margin: "0 auto", border: '4px solid black' }}>
+                <div className="one field">
+              <Form.Field>
+                <label htmlFor="event-element" style={{color: 'navy'}}>Event Element:</label>
+                <Form.Input
+                  id="event-element"
+                  type="text"
+                  placeholder="What do you need to bring/ get done?"
+                  value={eventElement}
+                  onChange={(e) => setEventElement(e.target.value)}
+                />
+              </Form.Field>
+              <Form.Field>
+                <label htmlFor="event-value" style={{color: 'navy'}}>Event Value:</label>
+                <Form.Input
+                  id="event-value"
+                  type="text"
+                  placeholder="Minutes, Dollar amount, etc."
+                  value={eventValue}
+                  onChange={(e) => setEventValue(e.target.value)}
+                />
+              </Form.Field>
+              <Button type="submit" style={{ backgroundColor: 'grey', border: '2px solid black' }}>Add</Button>
+                </div>
+              </div>
+            </Form>
+          {filteredElements.length === 0 ? (
+            <div>
+              <h1>No elements yet!</h1>
+            </div>
+          ) : (
+            <div className="ui two stackable centered cards" style={{ padding: '20px 100px'}}>
+              {eventElements
+                .filter((element) => parseInt(roomId) === element.event_planning_room.id)
+                .map((element) => (
+                    <EventElementCard key={element.id} element={element} />
+                ))}
+            </div>
+          )}
+        </Grid.Column>
+        <Grid.Column width={8}>
+          <Form onSubmit={handleParticipantSubmit}>
+            <div className="ui inverted segment" style={{ backgroundColor: '#47759E', border: '4px solid black', maxWidth: '60%', margin: '0 auto' }}>
+              <div className="one field">
+                <label htmlFor="participant" style={{ color: 'navy'}}>Add Participant:</label>
+                <Form.Input
+                  id="participant"
+                  type="text"
+                  value={isParticipant}
+                  placeholder="Add Participant"
+                  onChange={(e) => setIsParticipant(e.target.value)}
+                />
+                <Button type="submit" style={{ backgroundColor: 'grey', border: '2px solid black' }}>Add Participant</Button>
+              </div>
+            </div>
+          </Form>
+        </Grid.Column>
+        </Grid>
+      </div>
     </div>
   );
 }

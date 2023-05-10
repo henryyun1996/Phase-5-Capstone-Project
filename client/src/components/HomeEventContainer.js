@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
+import { Grid } from 'semantic-ui-react';
 import { isLoadingState, currentlyLoggedInState, roomState, isParticipantState } from '../atoms/index';
 import HomeEventCard from './HomeEventCard';
 import ParticipantRoom from './ParticipantRoom';
@@ -51,28 +52,34 @@ function HomeEventContainer() {
   });
 
   return (
-    <>
-      {filteredRooms.length === 0 ? (
-        <div>
-          <h1>No events planned</h1>
-        </div>
-      ) : (
-        <div className="card-container">
-          {rooms
-            .filter((room) => loggedInUser.id === room.created_by)
-            .map((room) => (
-              <HomeEventCard key={room.id} room={room} isParticipant={isParticipant} />
-            ))}
-        </div>
-      )}
-      <div>
-        <h1>Participating Events</h1>
+    <div style={{ padding: '0px 150px' }}>
+    <Grid columns={2} stackable>
+      <Grid.Column>
+        <h1 style={{ color: '#dac7b3' }}>Created Events</h1>
+        <br />
+        {filteredRooms.length === 0 ? (
+          <div>
+            <h1>No events planned</h1>
+          </div>
+        ) : (
+          <div className="ui two stackable centered cards">
+            {rooms
+              .filter((room) => loggedInUser.id === room.created_by)
+              .map((room) => (
+                <HomeEventCard key={room.id} room={room} isParticipant={isParticipant} />
+              ))}
+          </div>
+        )}
+      </Grid.Column>
+      <Grid.Column>
+        <h1 style={{ color: '#dac7b3' }}>Participating Events</h1>
+        <br />
         {filteredParticipatingRooms.length === 0 ? (
           <div>
             <h1>You haven't been invited to any events yet!</h1>
           </div>
         ) : (
-          <div className="card-container">
+          <div className="ui two stackable centered cards">
             {isParticipant
               .filter((participant) => loggedInUser.id === participant.user_id)
               .map((participant) => (
@@ -80,9 +87,10 @@ function HomeEventContainer() {
               ))}
           </div>
         )}
-      </div>
-    </>
-  );
+      </Grid.Column>
+    </Grid>
+  </div>
+);
 };
 
 export default HomeEventContainer;

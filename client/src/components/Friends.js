@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Grid } from "semantic-ui-react";
 import { useRecoilState } from 'recoil';
 import { searchTermState, resultsState ,currentlyLoggedInState, isFriendsState, friendUsernamesState } from '../atoms/index';
 import NavBar from "./NavBar";
@@ -23,20 +24,28 @@ function Friends({ first_name }) {
             })
     }, [setIsFriends, setFriendUsernames])
   
-
     const handleSearch = (event) => {
-        event.preventDefault();
-        fetch(`/users?search=${searchTerm}`, {
-            method: 'GET',
-            headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
+      event.preventDefault();
+      const firstChar = searchTerm.charAt(0);
+      fetch(`/users?search=${firstChar}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          const filteredResults = data.filter((result) => {
+            return (
+              result.username.charAt(0).toLowerCase() === firstChar.toLowerCase() &&
+              result.username !== currentUser.username
+            );
+          });
+          setResults(filteredResults);
         })
-            .then((response) => response.json())
-            .then((data) => setResults(data.filter((result) => result.id !== currentUser.id)))
-            .catch((error) => console.error(error));
-    };
+        .catch((error) => console.error(error));
+    };    
 
     const handleDeleteFriend = (userId, friendId) => {
         const friendToDelete = isFriends.find(
@@ -109,40 +118,54 @@ function Friends({ first_name }) {
         }
     };
 
+    const handleInputChange = (e) => {
+      setSearchTerm(e.target.value);
+    }
 
   return (
-    <div>
-      <h1>{first_name}'s Friends Page</h1>
-    <div><NavBar /></div>
-      <form onSubmit={handleSearch}>
-        <label htmlFor="search">Search for users:</label>
-        <input
-          type="text"
-          id="search"
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-        />
-        <button type="submit">Search</button>
-      </form>
-        <ul>
+    <div style={{ padding: '50px' }}>
+      <h1 style={{ color: '#FAC898' }}>{first_name}'s Friends Page</h1>
+      <br />
+    <NavBar />
+    <br />
+      <div style={{ padding: '50px' }}>
+        <Grid columns={2} style={{ padding: '50px', display: 'flex', alignItems:'center', backgroundColor: '#9CA6C9', border: '6px solid #9CA6D9' }}>
+          <Grid.Column width={5}>
+            <form onSubmit={handleSearch} style={{ textAlign: 'center' }} className="ui left icon input">
+              <input
+                type="text"
+                id="search"
+                placeholder="Search for friends:"
+                value={searchTerm}
+                onChange={handleInputChange}
+              />
+              <i class="users icon"></i>
+              <button type="submit"><i className="search icon"></i></button>
+            </form>
             {results.map((result) => (
-            <li key={result.id}>
-                {result.username}{' '}
-                <button onClick={() => handleAddFriend(result.id)}>
-                    {friendUsernames.some((friend) => friend.friend_id === result.id)
-                        ? 'Unfriend'
-                        : 'Add as Friend'}
-                </button>
-            </li>
+              <div class="ui celled list">
+                <div key={result.id} className="item">
+                  {result.username}{' '}
+                  <button onClick={() => handleAddFriend(result.id)}>
+                        {friendUsernames.some((friend) => friend.friend_id === result.id)
+                            ? 'Unfriend'
+                            : 'Add as Friend'}
+                  </button>
+                </div>
+              </div>
             ))}
-        </ul>
-      <div>
-        <h2>My Friends</h2>
-        <div className="card-container">
-            {isFriends.map((friend) => (
-                <FriendCard key={friend.id} friend={friend.friend.username} />
-            ))}
-        </div>
+            </Grid.Column>
+            <Grid.Column width={11}>
+              <div>
+                <h2 style={{ color: '#dac7b3' }}>My Friends</h2>
+                <div className="ui five stackable centered cards">
+                    {isFriends.map((friend) => (
+                        <FriendCard key={friend.id} friend={friend.friend.username} />
+                    ))}
+                </div>
+              </div>
+            </Grid.Column>
+        </Grid>
       </div>
     </div>
   );

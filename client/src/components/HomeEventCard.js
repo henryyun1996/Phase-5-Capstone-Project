@@ -19,9 +19,7 @@ function HomeEventCard({ room, isParticipant }) {
     return false;
   });
   
-  const usernames = participantFilter.map(participator => participator.user.username);
-  
-  console.log(usernames);
+  // const usernames = participantFilter.map(participator => participator.user.username);
 
   const handleGoIntoRoom = () => {
     history.push(`/rooms/${room.id}`);
@@ -117,14 +115,25 @@ function HomeEventCard({ room, isParticipant }) {
 
   return (
     <>
-      <div className="ui card">
+      <div className="ui card" style={{ backgroundColor: '#709FC1', padding: '0 0 10px', border: '2px solid #6A7DE1' }}>
         <div className="content">
           <h3>{updatedRoom.room_name}</h3>
           <p>Date of Event: {formattedDate}</p>
           <p>Time of Event: {formattedTime}</p>
-          <button onClick={handleEdit}>Edit</button>
-          <button onClick={handleGoIntoRoom}>Go into Room</button>
-          <button onClick={handleEventDelete}>Delete Event</button>
+          <div className="ui buttons">
+            <div className="ui bottom attached animated fade button" onClick={handleEdit}>
+              <div className="visible content"><i className="icon edit alternate"></i></div>
+              <div className="hidden content">Edit</div>
+            </div>
+            <div className="ui bottom attached animated fade button" onClick={handleGoIntoRoom} style={{ display: 'flex', alignItems: 'center' }}>
+              <div className="visible content"><i className="icon right arrow alternate"></i></div>
+              <div className="hidden content" style={{ marginTop: '-14px' }}>Enter Room</div>
+            </div>
+            <div className="ui bottom attached animated fade button" style={{ backgroundColor: '#F57070', border: '2px solid #D11A2A' }} onClick={handleEventDelete}>
+              <div className="visible content"><i className="icon trash alternate"></i></div>
+              <div className="hidden content">Delete</div>
+            </div>
+          </div>
         </div>
         {showFormStateDict[room.id] && (
           <div className="content">
@@ -140,13 +149,12 @@ function HomeEventCard({ room, isParticipant }) {
           ) : (
             <ul>
               {participantFilter.map((participant) => (
-                <li key={participant.id}>{participant.user.username}</li>
+                <li key={participant.id}>{participant.user.username} </li>
               ))}
             </ul>
           )}
         </div>
       </div>
-
     </>
   );
 }

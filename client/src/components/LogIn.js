@@ -52,19 +52,22 @@ const Login = () => {
   };
 
   return (
-    <div className="form">
-              <h1 id="login">Welcome to Noes Goes</h1>
+    <div className="form" style={{ padding: '50px', maxWidth: '70%', margin: '0 auto' }}>
+        <div id="login" style={{ fontFamily: 'Alfa Slab One', fontSize: '54px' }}>
+          <img src="https://i.ibb.co/tMJGKSr/Untitled-800-550-px.png" alt="Title-Logo" style={{ margin: '0 auto', alignItems: 'center', maxWidth: '30%' }}/>
+        </div>
+        <br />
       <Segment secondary>
-      <Grid columns={2} divided style={{ display: 'flex', alignItems: 'center', backgroundColor: '#88796E' }}>
+      <Grid columns={2} divided style={{ display: 'flex', alignItems: 'center', backgroundColor: '#9CA6C9', border: '6px solid #9CA6D9' }}>
         <Grid.Column width={8}>
-          <div className="ui inverted segment" style={{ backgroundColor: '#7D886E' }}>
+        <div className="ui inverted segment" style={{ backgroundColor: '#47759E', border: '4px solid black' }}>
             <div className="two fields">
               <div style={{ width: '100%' }}>
                 <Form onSubmit={formik.handleSubmit}>
                   <br />
                   <Form.Field>
                     <div className="field">
-                      <label style={{ color: 'white' }}>Username:</label>
+                      <label style={{ color: 'navy', fontFamily: 'Oswald', fontSize: '18px' }}>Username:</label>
                       <Form.Input
                         name="username"
                         type="text"
@@ -78,7 +81,7 @@ const Login = () => {
                   <br />
                   <Form.Field>
                     <div className="field">
-                      <label style={{ color: 'white' }}>Password:</label>
+                      <label style={{ color: 'navy', fontFamily: 'Oswald', fontSize: '18px' }}>Password:</label>
                       <Form.Input
                         name="password"
                         type={showPassword ? 'text' : 'password'}
@@ -97,7 +100,7 @@ const Login = () => {
                     </div>
                   </Form.Field>
                   <br />
-                  <Button className="ui button" type="submit">
+                  <Button className="ui button" type="submit" style={{ backgroundColor: 'grey', border: '2px solid black' }}>
                     Log In
                   </Button>
                   <br />
@@ -107,12 +110,14 @@ const Login = () => {
           </div>
         </Grid.Column>
         <Grid.Column width={8}>
-          <iframe src="https://giphy.com/embed/XbJYBCi69nyVOffLIU" width="480" height="480" className="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/Wegow-lofi-wegow-XbJYBCi69nyVOffLIU">via GIPHY</a></p>
+          <div style={{position: 'relative', paddingBottom: '100%', height: '0'}}>
+            <iframe src="https://giphy.com/embed/XbJYBCi69nyVOffLIU" style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%'}} className="giphy-embed" allowFullScreen title="Lo-fi music video from Wegow"></iframe>
+          </div>
         </Grid.Column>
       </Grid>
       </Segment>
       <h4 style={{ textAlign: 'center' }}>
-        No account? Sign up <a href="/signup">here.</a>
+        No account? Sign up <a href="/signup" style={{ color: 'orange' }}>here.</a>
       </h4>
     </div>
   );
