@@ -256,6 +256,7 @@ class EventElements(Resource):
         room_id = request_json.get('room_id')
         event_element = request_json.get('event_element')
         event_value = request_json.get('event_value')
+        completed = request_json.get('completed')
 
         if not all([room_id, event_element, event_value]):
             return make_response({"error": "Missing fields in request body"}, 400)
@@ -265,7 +266,7 @@ class EventElements(Resource):
         if not room:
             return make_response({"error": "Room not found"}, 404)
 
-        element = Event_Element(room_id=room_id, event_element=event_element, event_value=event_value)
+        element = Event_Element(room_id=room_id, event_element=event_element, event_value=event_value, completed=completed)
         db.session.add(element)
         db.session.commit()
 
@@ -281,6 +282,16 @@ class EventElementByID(Resource):
             return make_response(no_event_elements_message, 200)
         else:
             return make_response({"error": "No event element found"}, 402)
+
+    def patch(self, id):
+        event_element = Event_Element.query.get(id)
+        if not event_element:
+            return {'message': 'Event element not found'}, 404
+
+        event_element.completed = not event_element.completed
+        db.session.commit()
+
+        return {'message': f'Event element {event_element.id} completion status updated to {event_element.completed}'}
     
     def delete(self, id):
         event_element = Event_Element.query.filter_by(id=id).first()

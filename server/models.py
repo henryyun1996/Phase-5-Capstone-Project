@@ -114,6 +114,7 @@ class Event_Element(db.Model, SerializerMixin):
     event_element = db.Column(db.String)
     event_value = db.Column(db.String)
     room_id = db.Column(db.Integer, db.ForeignKey('event_planning_rooms.id'))
+    completed = db.Column(db.Boolean)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
 
