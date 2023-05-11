@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from flask import Flask, jsonify, request, make_response, session
 from flask_migrate import Migrate
-from flask_restful import Resource
+from flask_restful import Api, Resource
 from sqlalchemy.exc import IntegrityError
 
 from config import *

@@ -194,7 +194,7 @@ return (
           )}
         </Grid.Column>
         <Grid.Column width={8}>
-          <Form onSubmit={handleParticipantSubmit}>
+          <Form onSubmit={handleParticipantSubmit} style={{ position: 'relative', paddingBottom: '78%', height: '0' }}>
             <div className="ui inverted segment" style={{ backgroundColor: '#47759E', border: '4px solid black', maxWidth: '60%', margin: '0 auto' }}>
               <div className="one field">
                 <label htmlFor="participant" style={{ color: 'navy'}}>Add Participant:</label>
